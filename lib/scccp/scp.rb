@@ -1,4 +1,5 @@
 require 'net/scp'
+require 'fileutils'
 
 module Scccp
   class Scp
@@ -63,7 +64,10 @@ module Scccp
           !(o =~ /\.(tmp|ok)$/)
       end
 
+      logger.info("queue_folder is #{queue_folder}")
       logger.info("target is #{remote_host}:#{remote_path}")
+      #logger.info(files.inspect)
+
       begin
         # ブロックで使うと途中で失敗した場合にscpインスタンスを
         # 使いまわせない（というか固まる）のでこんな感じの使い方で
