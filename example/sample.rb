@@ -12,6 +12,7 @@ REMOTE_USER_PASSWORD = nil
 WORK_SPACE = '/tmp/test/scccp_sample/'
 REMOTE_PATH = WORK_SPACE + 'remote/'
 QUEUE_FOLDER = WORK_SPACE + 'from/'
+LOCKFILE = WORK_SPACE + '.scccp.lock'
 OK_FOLDER = WORK_SPACE + 'ok'
 NG_FOLDER = WORK_SPACE + 'ng'
 
@@ -33,6 +34,7 @@ execute do
   scccp.remote_user_password = REMOTE_USER_PASSWORD
   scccp.remote_path          = REMOTE_PATH
   scccp.queue_folder         = QUEUE_FOLDER
+  scccp.lockfile             = LOCKFILE
   scccp.ok_folder            = OK_FOLDER
   scccp.ng_folder            = NG_FOLDER
   scccp.proceed
