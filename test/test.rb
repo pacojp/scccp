@@ -14,6 +14,7 @@ class TestScccp < Test::Unit::TestCase
   OK_FOLDER            = "#{SCCCP_WORKING_DIR}done/"
   NG_FOLDER            = "#{SCCCP_WORKING_DIR}error/"
   REMOTE_PATH          = "#{SCCCP_WORKING_DIR}remote/"
+  LOCK_FILE            = "#{SCCCP_WORKING_DIR}test.lock"
   REMOTE_USER_NAME     = 'paco'
   REMOTE_USER_PASSWORD = nil
   REMOTE_HOST          = "localhost"
@@ -70,6 +71,55 @@ class TestScccp < Test::Unit::TestCase
 
     assert_true File.exists?(NG_FOLDER + "testfile2")
     assert_false File.exists?(NG_FOLDER + "testfile2.ok")
+  end
+
+  # アップロードに5秒程度かかるように調整が必要
+  # 200個SCPで今の環境で5秒程度かかる
+  # スレッド立ててからsleep 1 (ロックファイルが出来る前に
+  # 後のプロセスが起動しないように)が良い感じで動くように
+  # 個々の値は将来調整しないといけないかもしれない
+  def prepare_heavy_test
+    (1..200).each do |i|
+      file = QUEUE_FOLDER + "#{i}.dat"
+      File.write(file,'test_data')
+    end
+  end
+
+
+  def test_signal
+    prepare_heavy_test
+
+    th = Thread.new do
+      scccp = Scccp::Scp.new(attr.merge({:lockfile=>LOCK_FILE}))
+      scccp.proceed
+    end
+
+    sleep 1
+
+    assert_equal true, File.exists?(LOCK_FILE)
+    `kill #{File.read(LOCK_FILE)}`
+
+    sleep 1
+    assert_equal false, File.exists?(LOCK_FILE)
+
+    th.join
+  end
+
+
+  def test_lockfile
+    prepare_heavy_test
+
+    th = Thread.new do
+      scccp = Scccp::Scp.new(attr.merge({:lockfile=>LOCK_FILE}))
+      scccp.proceed
+    end
+
+    sleep 1
+    assert_equal true, File.exists?(LOCK_FILE)
+
+    scccp2 = Scccp::Scp.new(attr.merge({:lockfile=>LOCK_FILE}))
+    assert_equal :lockfile_error, scccp2.proceed
+    th.join
   end
 
   def test_connection_error
