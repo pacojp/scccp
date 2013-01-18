@@ -10,6 +10,7 @@ module Scccp
       :remote_user_name,
       :remote_user_password,
       :remote_path,
+      :remote_port,
       :queue_folder,
       :ok_folder,
       :ng_folder,
@@ -26,6 +27,7 @@ module Scccp
       opts.each do |k, v|
         send("#{k}=", v)
       end
+      self.remote_port ||= 22
     end
 
     def attrs_ok?
@@ -57,6 +59,7 @@ module Scccp
       SIGNALS.each { |sig| trap(sig){receive_signal(sig)} }
 
       opt = {}
+      opt[:port] = remote_port
       if remote_user_password
         opt[:password] = remote_user_password
       end
@@ -82,7 +85,7 @@ module Scccp
       end
 
       logger.info("queue_folder is #{queue_folder}")
-      logger.info("target is #{remote_host}:#{remote_path}")
+      logger.info("target is #{remote_host}:#{remote_port}:#{remote_path}")
       #logger.info(files.inspect)
       uploaded_count = 0
 

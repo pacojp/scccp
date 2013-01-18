@@ -3,7 +3,6 @@
 $: << File.dirname(__FILE__)
 require 'test_helper'
 require 'test/unit'
-require 'Fileutils'
 
 require 'scccp'
 
@@ -14,6 +13,7 @@ class TestScccp < Test::Unit::TestCase
   OK_FOLDER            = "#{SCCCP_WORKING_DIR}done/"
   NG_FOLDER            = "#{SCCCP_WORKING_DIR}error/"
   REMOTE_PATH          = "#{SCCCP_WORKING_DIR}remote/"
+  REMOTE_PORT          = 22
   LOCK_FILE            = "#{SCCCP_WORKING_DIR}test.lock"
   REMOTE_USER_NAME     = 'paco'
   REMOTE_USER_PASSWORD = nil
@@ -153,6 +153,30 @@ class TestScccp < Test::Unit::TestCase
     assert_raise do
       scccp.proceed
     end
+    scccp.queue_folder = QUEUE_FOLDER
+    scccp.proceed
+
+    assert_true File.exists?(REMOTE_PATH + "testfile2")
+    assert_true File.exists?(REMOTE_PATH + "testfile2.ok")
+
+    assert_true File.exists?(@l_file_tmp)
+    assert_true File.exists?(@l_file_ok)
+  end
+
+  def test_scccp_with_port
+    assert_true File.exists?(@l_file)
+    assert_true File.exists?(@l_file1)
+    scccp = Scccp::Scp.new()
+    scccp.logger               = Logger.new('/dev/null')
+    scccp.remote_host          = REMOTE_HOST
+    # ここが増えただけ
+    scccp.remote_port          = REMOTE_PORT
+    scccp.remote_user_name     = REMOTE_USER_NAME
+    scccp.remote_user_password = REMOTE_USER_PASSWORD
+    scccp.remote_path          = REMOTE_PATH
+    scccp.queue_folder         = 'hohogege'
+    scccp.ok_folder            = OK_FOLDER
+    scccp.ng_folder            = NG_FOLDER
     scccp.queue_folder = QUEUE_FOLDER
     scccp.proceed
 
