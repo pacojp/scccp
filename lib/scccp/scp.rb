@@ -21,10 +21,11 @@ module Scccp
     end
 
     def initialize(opts={})
+      self.remote_port = 22
+      self.logger      = Logger.new(STDOUT)
       opts.each do |k, v|
         send("#{k}=", v)
       end
-      self.remote_port ||= 22
     end
 
     def attrs_ok?
@@ -72,8 +73,11 @@ module Scccp
           !(o =~ /\.(tmp|ok)$/)
       end
 
-      logger.info("queue_folder is #{queue_folder}")
-      logger.info("target is #{remote_host}:#{remote_port}:#{remote_path}")
+      unless @__not_first_time_to_proceed
+        logger.info("queue_folder is #{queue_folder}")
+        logger.info("target is #{remote_user_name}@#{remote_host}:#{remote_port}:#{remote_path}")
+        @__not_first_time_to_proceed = true
+      end
       #logger.info(files.inspect)
       uploaded_count = 0
 
