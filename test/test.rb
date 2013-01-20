@@ -85,43 +85,6 @@ class TestScccp < Test::Unit::TestCase
     end
   end
 
-
-  def test_signal
-    prepare_heavy_test
-
-    th = Thread.new do
-      scccp = Scccp::Scp.new(attr.merge({:lockfile=>LOCK_FILE}))
-      scccp.proceed
-    end
-
-    sleep 1
-
-    assert_equal true, File.exists?(LOCK_FILE)
-    `kill #{File.read(LOCK_FILE)}`
-
-    sleep 1
-    assert_equal false, File.exists?(LOCK_FILE)
-
-    th.join
-  end
-
-
-  def test_lockfile
-    prepare_heavy_test
-
-    th = Thread.new do
-      scccp = Scccp::Scp.new(attr.merge({:lockfile=>LOCK_FILE}))
-      scccp.proceed
-    end
-
-    sleep 1
-    assert_equal true, File.exists?(LOCK_FILE)
-
-    scccp2 = Scccp::Scp.new(attr.merge({:lockfile=>LOCK_FILE}))
-    assert_equal :lockfile_error, scccp2.proceed
-    th.join
-  end
-
   def test_connection_error
     scccp = Scccp::Scp.new(attr)
     scccp.remote_host = 'sefisfejisfe.sefijsefij.esfij'
@@ -132,7 +95,6 @@ class TestScccp < Test::Unit::TestCase
     # コネクションエラーだとキューフォルダーをいじらない
     assert_true File.exists?(QUEUE_FOLDER + "testfile2")
   end
-
 
   def test_scccp
     assert_true File.exists?(@l_file)

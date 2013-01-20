@@ -3,8 +3,6 @@ require 'fileutils'
 
 module Scccp
   class Scp
-    SIGNALS = [ :QUIT, :INT, :TERM, :USR1, :USR2, :HUP ]
-
     ATTRS = [
       :remote_host,
       :remote_user_name,
@@ -15,7 +13,6 @@ module Scccp
       :ok_folder,
       :ng_folder,
       :timeout,
-      :lockfile,
       :logger2ssh,
       :logger
     ]
@@ -35,7 +32,7 @@ module Scccp
         #v = instance_variable_get("@#{attr.to_s}")
         v = send(attr)
         case attr
-        when :remote_user_name,:remote_user_password,:timeout,:logger2ssh,:lockfile
+        when :remote_user_name,:remote_user_password,:timeout,:logger2ssh
           next
         when :queue_folder,:ok_folder,:ng_folder
           unless File.directory?(v)
@@ -56,7 +53,6 @@ module Scccp
 
     def proceed
       attrs_ok?
-      SIGNALS.each { |sig| trap(sig){receive_signal(sig)} }
 
       opt = {}
       opt[:port] = remote_port
@@ -74,14 +70,6 @@ module Scccp
       files = files.select do |o|
         File::ftype(o) == "file" &&
           !(o =~ /\.(tmp|ok)$/)
-      end
-
-      if lockfile
-        if File.exists?(lockfile)
-          logger.warn("lockfile:#{lockfile} already exists")
-          return :lockfile_error
-        end
-        File.open(lockfile, "w"){|f|f.write $$}
       end
 
       logger.info("queue_folder is #{queue_folder}")
@@ -125,9 +113,6 @@ module Scccp
       ensure
         if scp
           scp.session.close
-        end
-        if lockfile
-          FileUtils.rm lockfile
         end
       end
 
