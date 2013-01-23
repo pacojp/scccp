@@ -80,6 +80,7 @@ module Scccp
       end
       #logger.info(files.inspect)
       uploaded_count = 0
+      return 0 if files.size == 0
 
       begin
         # ブロックで使うと途中で失敗した場合にscpインスタンスを

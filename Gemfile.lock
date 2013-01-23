@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    scccp (0.0.4)
+    scccp (0.0.5)
       net-scp
 
 GEM
